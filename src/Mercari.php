@@ -40,13 +40,13 @@ final readonly class Mercari
         $this->privateKey = JWKFactory::createECKey('P-256');
     }
 
-    public function get(string $endpoint) : string
+    public function get(string $endpoint): string
     {
         $r = $this->client->get($endpoint);
         return (string)$r->getBody();
     }
 
-    private function misrepresentHeaders(RequestInterface $request) : RequestInterface
+    private function misrepresentHeaders(RequestInterface $request): RequestInterface
     {
         return $request->withHeader(
             'User-Agent',
@@ -54,7 +54,7 @@ final readonly class Mercari
         );
     }
 
-    private function generateToken(RequestInterface $request) : RequestInterface
+    private function generateToken(RequestInterface $request): RequestInterface
     {
         $jws = (new JWSBuilder(new AlgorithmManager([new ES256()])))
             ->create()
