@@ -1,6 +1,6 @@
 {
     "name": "nerahikada/mercari",
-    "description": "Mercari API Wrapper for PHP",
+    "description": "An API Wrapper for Mercari Japan Written in PHP",
     "type": "library",
     "require": {
         "php": ">=8.2",

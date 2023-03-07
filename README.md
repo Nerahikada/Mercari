@@ -1,2 +1,2 @@
 # Mercari
-Mercari API Wrapper for PHP
+An API Wrapper for Mercari Japan Written in PHP
