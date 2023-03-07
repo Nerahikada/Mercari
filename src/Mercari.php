@@ -12,6 +12,7 @@ use Nerahikada\Mercari\Middleware\GenerateTokenMiddleware;
 use Nerahikada\Mercari\Middleware\MisrepresentHeaderMiddleware;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use stdClass;
 
 final readonly class Mercari
 {
@@ -36,9 +37,38 @@ final readonly class Mercari
         ]);
     }
 
-    public function get(string $endpoint): string
+    private function get(string $endpoint): array
     {
-        $r = $this->client->get($endpoint);
-        return (string)$r->getBody();
+        $response = $this->client->get($endpoint);
+        return json_decode((string)$response->getBody(), true);
+    }
+
+    private function post(string $endpoint, mixed $payload): array
+    {
+        $response = $this->client->post($endpoint, ['json' => $payload]);
+        return json_decode((string)$response->getBody(), true);
+    }
+
+    public function getUnreadNotificationCount(): int
+    {
+        $r = $this->post('https://api.mercari.jp/services/notification/v1/get_unread_count', new stdClass());
+        return (int)$r['count'];
+    }
+
+    public function getItemCategories(): array
+    {
+        $r = $this->post('https://api.mercari.jp/services/productcatalog/v1/get_item_categories', [
+            'showDeleted' => false,
+            'flattenResponse' => true,
+            'pageSize' => 0,
+            'pageToken' => '',
+        ]);
+        return $r['itemCategories'];
+    }
+
+    public function getItemSizes(): array
+    {
+        $r = $this->get('https://api.mercari.jp/services/master/v1/itemSizes');
+        return $r;
     }
 }
