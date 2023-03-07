@@ -26,13 +26,13 @@ final readonly class Mercari
     private JWK $privateKey;
     private Client $client;
 
-    public function __construct()
+    public function __construct(Language $language = Language::Japanese)
     {
         $this->uuid = Uuid::uuid4();
         $this->privateKey = JWKFactory::createECKey('P-256');
 
         $stack = HandlerStack::create();
-        $stack->push(new MisrepresentHeaderMiddleware());
+        $stack->push(new MisrepresentHeaderMiddleware($language));
         $stack->push(new GenerateTokenMiddleware($this->uuid, $this->privateKey));
 
         $this->client = new Client([
