@@ -32,10 +32,8 @@ final readonly class Mercari
         $stack->push(new GenerateTokenMiddleware($this->uuid, $this->privateKey));
 
         $this->client = new Client([
-            'debug' => true,
             'handler' => $stack,
             'headers' => ['X-Platform' => 'web'],
-            'http_errors' => false,
         ]);
     }
 
