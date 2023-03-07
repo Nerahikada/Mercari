@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Nerahikada\Mercari;
 
+use Generator;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use Jose\Component\Core\JWK;
 use Jose\Component\KeyManagement\JWKFactory;
 use Nerahikada\Mercari\Middleware\GenerateTokenMiddleware;
 use Nerahikada\Mercari\Middleware\MisrepresentHeaderMiddleware;
+use Nerahikada\Mercari\Model\ItemCategory;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use stdClass;
@@ -55,15 +57,23 @@ final readonly class Mercari
         return (int)$r['count'];
     }
 
-    public function getItemCategories(): array
+    /**
+     * @yield ItemCategory
+     */
+    public function getItemCategories(): Generator
     {
-        $r = $this->post('https://api.mercari.jp/services/productcatalog/v1/get_item_categories', [
-            'showDeleted' => false,
-            'flattenResponse' => true,
-            'pageSize' => 0,
-            'pageToken' => '',
-        ]);
-        return $r['itemCategories'];
+        $pageToken = '';
+        do {
+            $r = $this->post('https://api.mercari.jp/services/productcatalog/v1/get_item_categories', [
+                'showDeleted' => false,
+                'flattenResponse' => false,
+                'pageSize' => 0,
+                'pageToken' => $pageToken,
+            ]);
+            foreach ($r['itemCategories'] as $category) {
+                yield ItemCategory::fromArray($category);
+            }
+        } while ($pageToken = $r['nextPageToken']);
     }
 
     public function getItemSizes(): array
