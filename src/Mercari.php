@@ -51,8 +51,11 @@ final readonly class Mercari
 
     public function getUnreadNotificationCount(): int
     {
-        $r = $this->post('https://api.mercari.jp/services/notification/v1/get_unread_count', new stdClass());
-        return (int)$r['count'];
+        $response = $this->post(
+            'https://api.mercari.jp/services/notification/v1/get_unread_count',
+            new stdClass()
+        );
+        return (int)$response['count'];
     }
 
     /**
@@ -62,21 +65,24 @@ final readonly class Mercari
     {
         $pageToken = '';
         do {
-            $r = $this->post('https://api.mercari.jp/services/productcatalog/v1/get_item_categories', [
-                'showDeleted' => false,
-                'flattenResponse' => false,
-                'pageSize' => 0,
-                'pageToken' => $pageToken,
-            ]);
-            foreach ($r['itemCategories'] as $category) {
+            $response = $this->post(
+                'https://api.mercari.jp/services/productcatalog/v1/get_item_categories',
+                [
+                    'showDeleted' => false,
+                    'flattenResponse' => false,
+                    'pageSize' => 0,
+                    'pageToken' => $pageToken,
+                ]
+            );
+            foreach ($response['itemCategories'] as $category) {
                 yield ItemCategory::fromArray($category);
             }
-        } while ($pageToken = $r['nextPageToken']);
+        } while ($pageToken = $response['nextPageToken']);
     }
 
     public function getItemSizes(): array
     {
-        $r = $this->get('https://api.mercari.jp/services/master/v1/itemSizes');
-        return $r;
+        $response = $this->get('https://api.mercari.jp/services/master/v1/itemSizes');
+        return $response;
     }
 }
