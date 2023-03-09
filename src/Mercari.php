@@ -19,6 +19,7 @@ use Nerahikada\Mercari\Model\ItemCategory;
 use Nerahikada\Mercari\Model\ItemColor;
 use Nerahikada\Mercari\Model\ItemCondition;
 use Nerahikada\Mercari\Model\ItemSize;
+use Nerahikada\Mercari\Model\ItemStatus;
 use Nerahikada\Mercari\Model\NestedItemCategory;
 use Nerahikada\Mercari\Model\ShippingMethod;
 use Nerahikada\Mercari\Model\ShippingPayer;
@@ -154,18 +155,56 @@ final readonly class Mercari
         }
     }
 
-    public function getItems(int $count = 50): Generator
+    /**
+     * @param ItemStatus[] $statuses
+     * @yield Item
+     */
+    public function getItems(int $limit = 60, array $statuses = [ItemStatus::OnSale]): Generator
     {
-        if ($count < 1 || $count > 1000) {
-            throw new ArgumentOutOfRangeException('$count must be between 1 and 1000');
+        if ($limit < 1) {
+            throw new ArgumentOutOfRangeException('$limit must be greater than 0');
         }
-        $response = $this->get('https://api.mercari.jp/store/get_items', [
-            'limit' => $count,
-            //'type' => 'category', //?????
-        ]);
-        var_dump($response);
-        foreach ($response['data'] as $item) {
-            yield Item::fromArray($item);
+
+        do {
+            $response = $this->get('https://api.mercari.jp/store/get_items', [
+                'limit' => min($limit, 1000),
+                //'type' => 'category', //?????
+                'status' => implode(',', array_map(fn(ItemStatus $status) => $status->value, $statuses)),
+                'max_pager_id' => $pagerId ?? null,
+            ]);
+            foreach ($response['data'] as $item) {
+                yield $item = Item::fromArray($item);
+                $pagerId = $item->pagerId;
+                $limit--;
+            }
+        } while ($limit > 0 && $response['meta']['has_next']);
+    }
+
+    /**
+     * @param ItemStatus[] $statuses
+     * @yield Item
+     */
+    public function getItemsBySeller(
+        int $sellerId,
+        int $limit = 30,
+        array $statuses = [ItemStatus::OnSale, ItemStatus::Trading, ItemStatus::SoldOut]
+    ): Generator {
+        if ($limit < 1) {
+            throw new ArgumentOutOfRangeException('$limit must be greater than 0');
         }
+
+        do {
+            $response = $this->get('https://api.mercari.jp/items/get_items', [
+                'seller_id' => $sellerId,
+                'limit' => min($limit, 999),
+                'status' => implode(',', array_map(fn(ItemStatus $status) => $status->value, $statuses)),
+                'max_pager_id' => $pagerId ?? null,
+            ]);
+            foreach ($response['data'] as $item) {
+                yield $item = Item::fromArray($item);
+                $pagerId = $item->pagerId;
+                $limit--;
+            }
+        } while ($limit > 0 && $response['meta']['has_next']);
     }
 }
