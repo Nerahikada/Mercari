@@ -9,13 +9,19 @@ use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use Jose\Component\Core\JWK;
 use Jose\Component\KeyManagement\JWKFactory;
+use Nerahikada\Mercari\Exception\ArgumentOutOfRangeException;
 use Nerahikada\Mercari\Middleware\GenerateTokenMiddleware;
 use Nerahikada\Mercari\Middleware\MisrepresentHeaderMiddleware;
 use Nerahikada\Mercari\Model\FlattenedItemCategory;
+use Nerahikada\Mercari\Model\Item;
 use Nerahikada\Mercari\Model\ItemBrand;
 use Nerahikada\Mercari\Model\ItemCategory;
+use Nerahikada\Mercari\Model\ItemColor;
+use Nerahikada\Mercari\Model\ItemCondition;
 use Nerahikada\Mercari\Model\ItemSize;
 use Nerahikada\Mercari\Model\NestedItemCategory;
+use Nerahikada\Mercari\Model\ShippingMethod;
+use Nerahikada\Mercari\Model\ShippingPayer;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use stdClass;
@@ -104,6 +110,62 @@ final readonly class Mercari
         $response = $this->get('https://api.mercari.jp/services/master/v1/itemSizes');
         foreach ($response['sizes'] as $size) {
             yield ItemSize::fromArray($size);
+        }
+    }
+
+    /**
+     * @yield ItemColor
+     */
+    public function getItemColors(): Generator
+    {
+        $response = $this->get('https://api.mercari.jp/services/master/v1/itemColors');
+        foreach ($response['colors'] as $color) {
+            yield ItemColor::fromArray($color);
+        }
+    }
+
+    /**
+     * @yield ShippingPayer
+     */
+    public function getShippingPayers(): Generator
+    {
+        $response = $this->get('https://api.mercari.jp/services/master/v1/shippingPayers');
+        foreach ($response['payers'] as $payer) {
+            yield ShippingPayer::fromArray($payer);
+        }
+    }
+
+    /**
+     * @yield ItemCondition
+     */
+    public function getItemConditions(): Generator
+    {
+        $response = $this->get('https://api.mercari.jp/services/master/v1/itemConditions');
+        foreach ($response['conditions'] as $condition) {
+            yield ItemCondition::fromArray($condition);
+        }
+    }
+
+    public function getShippingMethods(): Generator
+    {
+        $response = $this->get('https://api.mercari.jp/services/master/v1/shippingMethods');
+        foreach ($response['methods'] as $method) {
+            yield ShippingMethod::fromArray($method);
+        }
+    }
+
+    public function getItems(int $count = 50): Generator
+    {
+        if ($count < 1 || $count > 1000) {
+            throw new ArgumentOutOfRangeException('$count must be between 1 and 1000');
+        }
+        $response = $this->get('https://api.mercari.jp/store/get_items', [
+            'limit' => $count,
+            //'type' => 'category', //?????
+        ]);
+        var_dump($response);
+        foreach ($response['data'] as $item) {
+            yield Item::fromArray($item);
         }
     }
 }
