@@ -43,6 +43,7 @@ final readonly class Mercari
         $stack->push(new GenerateTokenMiddleware($this->uuid, $this->privateKey));
 
         $this->client = new Client([
+            'base_uri' => 'https://api.mercari.jp/',
             'handler' => $stack,
             'headers' => ['X-Platform' => 'web'],
         ]);
@@ -62,7 +63,7 @@ final readonly class Mercari
 
     public function getUnreadNotificationCount(): int
     {
-        $response = $this->post('https://api.mercari.jp/services/notification/v1/get_unread_count');
+        $response = $this->post('services/notification/v1/get_unread_count');
         return (int)$response['count'];
     }
 
@@ -72,7 +73,7 @@ final readonly class Mercari
     public function getItemCategories(bool $flatten = true): Generator
     {
         $response = $this->post(
-            'https://api.mercari.jp/services/productcatalog/v1/get_item_categories',
+            'services/productcatalog/v1/get_item_categories',
             [
                 'showDeleted' => false,
                 'flattenResponse' => $flatten,
@@ -94,7 +95,7 @@ final readonly class Mercari
         $pageToken = '';
         do {
             $response = $this->post(
-                'https://api.mercari.jp/services/productcatalog/v1/get_item_brands',
+                'services/productcatalog/v1/get_item_brands',
                 ['pageToken' => $pageToken]
             );
             foreach ($response['itemBrands'] as $brand) {
@@ -108,7 +109,7 @@ final readonly class Mercari
      */
     public function getItemSizes(): Generator
     {
-        $response = $this->get('https://api.mercari.jp/services/master/v1/itemSizes');
+        $response = $this->get('services/master/v1/itemSizes');
         foreach ($response['sizes'] as $size) {
             yield ItemSize::fromArray($size);
         }
@@ -119,7 +120,7 @@ final readonly class Mercari
      */
     public function getItemColors(): Generator
     {
-        $response = $this->get('https://api.mercari.jp/services/master/v1/itemColors');
+        $response = $this->get('services/master/v1/itemColors');
         foreach ($response['colors'] as $color) {
             yield ItemColor::fromArray($color);
         }
@@ -130,7 +131,7 @@ final readonly class Mercari
      */
     public function getShippingPayers(): Generator
     {
-        $response = $this->get('https://api.mercari.jp/services/master/v1/shippingPayers');
+        $response = $this->get('services/master/v1/shippingPayers');
         foreach ($response['payers'] as $payer) {
             yield ShippingPayer::fromArray($payer);
         }
@@ -141,15 +142,18 @@ final readonly class Mercari
      */
     public function getItemConditions(): Generator
     {
-        $response = $this->get('https://api.mercari.jp/services/master/v1/itemConditions');
+        $response = $this->get('services/master/v1/itemConditions');
         foreach ($response['conditions'] as $condition) {
             yield ItemCondition::fromArray($condition);
         }
     }
 
+    /**
+     * @yield ShippingMethod
+     */
     public function getShippingMethods(): Generator
     {
-        $response = $this->get('https://api.mercari.jp/services/master/v1/shippingMethods');
+        $response = $this->get('services/master/v1/shippingMethods');
         foreach ($response['methods'] as $method) {
             yield ShippingMethod::fromArray($method);
         }
@@ -166,7 +170,7 @@ final readonly class Mercari
         }
 
         do {
-            $response = $this->get('https://api.mercari.jp/store/get_items', [
+            $response = $this->get('store/get_items', [
                 'limit' => min($limit, 1000),
                 //'type' => 'category', //?????
                 'status' => implode(',', array_map(fn(ItemStatus $status) => $status->value, $statuses)),
@@ -194,7 +198,7 @@ final readonly class Mercari
         }
 
         do {
-            $response = $this->get('https://api.mercari.jp/items/get_items', [
+            $response = $this->get('items/get_items', [
                 'seller_id' => $sellerId,
                 'limit' => min($limit, 999),
                 'status' => implode(',', array_map(fn(ItemStatus $status) => $status->value, $statuses)),
