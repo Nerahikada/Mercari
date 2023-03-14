@@ -13,7 +13,8 @@ use Nerahikada\Mercari\Exception\ArgumentOutOfRangeException;
 use Nerahikada\Mercari\Middleware\GenerateTokenMiddleware;
 use Nerahikada\Mercari\Middleware\MisrepresentHeaderMiddleware;
 use Nerahikada\Mercari\Model\FlattenedItemCategory;
-use Nerahikada\Mercari\Model\Item;
+use Nerahikada\Mercari\Model\Item1;
+use Nerahikada\Mercari\Model\Item2;
 use Nerahikada\Mercari\Model\ItemBrand;
 use Nerahikada\Mercari\Model\ItemCategory;
 use Nerahikada\Mercari\Model\ItemColor;
@@ -161,7 +162,7 @@ final readonly class Mercari
 
     /**
      * @param ItemStatus[] $statuses
-     * @yield Item
+     * @yield Item1
      */
     public function getItems(int $limit = 60, array $statuses = [ItemStatus::OnSale]): Generator
     {
@@ -177,7 +178,7 @@ final readonly class Mercari
                 'max_pager_id' => $pagerId ?? null,
             ]);
             foreach ($response['data'] as $item) {
-                yield $item = Item::fromArray($item);
+                yield $item = Item1::fromArray($item);
                 $pagerId = $item->pagerId;
                 $limit--;
             }
@@ -186,7 +187,7 @@ final readonly class Mercari
 
     /**
      * @param ItemStatus[] $statuses
-     * @yield Item
+     * @yield Item2
      */
     public function getItemsBySeller(
         int $sellerId,
@@ -205,7 +206,7 @@ final readonly class Mercari
                 'max_pager_id' => $pagerId ?? null,
             ]);
             foreach ($response['data'] as $item) {
-                yield $item = Item::fromArray($item);
+                yield $item = Item2::fromArray($item);
                 $pagerId = $item->pagerId;
                 $limit--;
             }

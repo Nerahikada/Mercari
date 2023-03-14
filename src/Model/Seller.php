@@ -7,8 +7,7 @@ namespace Nerahikada\Mercari\Model;
 /**
  * @property int $id
  * @property string $name
- * @property int $displayOrder
  */
-abstract readonly class ItemCategory implements ModelInterface
+abstract readonly class Seller implements ModelInterface
 {
 }

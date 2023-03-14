@@ -16,7 +16,7 @@ final readonly class ShippingMethodImage implements ModelInterface
         );
     }
 
-    public function __construct(
+    private function __construct(
         public string $deviceType,
         public string $url,
         public string $urlSelected,

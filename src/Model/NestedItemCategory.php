@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Nerahikada\Mercari\Model;
 
+use Nerahikada\Mercari\Exception\ArgumentOutOfRangeException;
+
 final readonly class NestedItemCategory extends ItemCategory
 {
     public static function fromArray(array $array): self
@@ -26,6 +28,7 @@ final readonly class NestedItemCategory extends ItemCategory
     }
 
     /**
+     * @param int $level A level of category hierarchy (takes between 0 and 2)
      * @param self[] $children
      */
     private function __construct(
@@ -43,7 +46,9 @@ final readonly class NestedItemCategory extends ItemCategory
         public array $children,
         public ?int $parentId,
     ) {
-        $this->checkLevelRange($level);
+        if ($level < 0 || $level > 2) {
+            throw new ArgumentOutOfRangeException('$level must be between 0 and 2');
+        }
         foreach ($children as $child) {
             assert(is_a($child, self::class));
         }
